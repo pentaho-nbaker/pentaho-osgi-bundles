@@ -33,6 +33,9 @@ public class SpringFileHandler implements PluginFileHandler {
 
   public static final String LIB_PATTERN = ".+\\/lib\\/.+\\.jar";
   public static final String PLUGIN_SPRING_XML = ".+\\/plugin.spring.xml";
+  public static final String LIB = "/lib/";
+  public static final String JAR = ".jar";
+  public static final String XML = ".xml";
   private final Pattern beanPattern = Pattern.compile( ".*id=\"([^\\.]+\\.[^\"]+)\".+[(\\r\\n|\\r|\\n)]*" );
 
   @Override public boolean handles( String fileName ) {
@@ -42,7 +45,7 @@ public class SpringFileHandler implements PluginFileHandler {
   @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
       throws PluginHandlingException {
 
-    if ( relativePath.matches( LIB_PATTERN ) ) {
+    if ( relativePath.contains( LIB ) && relativePath.endsWith( JAR ) ) {
 
       FileInputStream fin = null;
       JarInputStream jarInputStream = null;
@@ -53,7 +56,7 @@ public class SpringFileHandler implements PluginFileHandler {
         ZipEntry nextEntry;
         while ( ( nextEntry = jarInputStream.getNextEntry() ) != null ) {
           String name = nextEntry.getName();
-          if ( name.matches( ".+\\.xml" ) ) {
+          if ( name.endsWith( XML ) ) {
             // have to crack it open unfortunately.
             //
             ByteArrayOutputStream byteArrayOutputStream = null;

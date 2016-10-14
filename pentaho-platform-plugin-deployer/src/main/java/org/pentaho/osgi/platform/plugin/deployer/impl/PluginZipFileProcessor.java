@@ -57,6 +57,8 @@ public class PluginZipFileProcessor {
   public static final String BLUEPRINT = "OSGI-INF/blueprint/blueprint.xml";
   public static final String BLUEPRINT_REGEX = ".*\\/OSGI-INF\\/blueprint\\/.*\\.xml";
   public static final String MANIFEST_REGEX = ".*\\/META-INF\\/MANIFEST.MF";
+  public static final String MANIFEST_MF = "MANIFEST.MF";
+  public static final String OSGI_INF_BLUEPRINT = "OSGI-INF/blueprint/";
 
   private final List<PluginFileHandler> pluginFileHandlers;
   private final String name;
@@ -109,10 +111,10 @@ public class PluginZipFileProcessor {
         byte[] zipBytes = byteArrayOutputStream.toByteArray();
         String name = zipEntry.getName();
         boolean shouldOutput = true;
-        if ( name.matches( MANIFEST_REGEX ) ) {
+        if ( name.endsWith( MANIFEST_MF ) ) {
           shouldOutput = false;
           manifest = new Manifest( new ByteArrayInputStream( zipBytes ) );
-        } else if ( name.matches( BLUEPRINT_REGEX ) ) {
+        } else if ( name.contains( OSGI_INF_BLUEPRINT ) && !name.endsWith( OSGI_INF_BLUEPRINT ) ) {
           shouldOutput = false;
           try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -152,6 +154,7 @@ public class PluginZipFileProcessor {
       }
 
       if ( pluginFileHandlers != null ) {
+        PluginFileHandler[] handlers = pluginFileHandlers.toArray( new PluginFileHandler[pluginFileHandlers.size()]);
         Stack<File> fileStack = new Stack<File>();
         fileStack.push( dir );
         while ( fileStack.size() > 0 ) {
@@ -172,7 +175,8 @@ public class PluginZipFileProcessor {
             sb.setLength( sb.length() - 1 );
           }
           String currentPath = sb.toString();
-          for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
+          for ( int i = 0; i < handlers.length; i++ ) {
+            PluginFileHandler pluginFileHandler = handlers[ i ];
             if ( pluginFileHandler.handles( currentPath ) ) {
               try {
                 // There is no short-circuit. Multiple handlers can do work on any given resource
